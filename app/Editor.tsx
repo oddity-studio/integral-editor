@@ -225,8 +225,16 @@ export default function Editor() {
       }
 
       // Finalize MP4
-      await videoEncoder.flush();
-      await audioEncoder.flush();
+      try {
+        await videoEncoder.flush();
+      } catch (e) {
+        console.error("Video flush error:", e);
+      }
+      try {
+        await audioEncoder.flush();
+      } catch (e) {
+        console.error("Audio flush error:", e);
+      }
       videoEncoder.close();
       audioEncoder.close();
       muxer.finalize();
