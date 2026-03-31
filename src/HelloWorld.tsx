@@ -12,7 +12,7 @@ import {
 } from "remotion";
 import type { VideoProps, ColorScheme, Scene } from "./types";
 import { FPS, DEFAULT_SCENE_DURATION, getSceneFrames } from "./types";
-import { LottieTransition, TRANSITION_DURATION, preloadAllTransitions } from "./LottieTransition";
+import { LottieTransition, TRANSITION_DURATION, preloadAllTransitions, CUSTOM_TRANSITIONS } from "./LottieTransition";
 import { loadFont as loadDelaGothicOne } from "@remotion/google-fonts/DelaGothicOne";
 import { loadFont as loadExo2 } from "@remotion/google-fonts/Exo2";
 import { loadFont as loadPermanentMarker } from "@remotion/google-fonts/PermanentMarker";
@@ -826,7 +826,7 @@ export const HelloWorld: React.FC<VideoProps> = ({ colorScheme, scenes, music = 
                 from={sceneStart - transitionOffset}
                 durationInFrames={TRANSITION_DURATION}
               >
-                <LottieTransition src={`${BASE}/picker/transitions/${transition}`} />
+                <LottieTransition src={transition} />
               </Sequence>
             )}
           </React.Fragment>

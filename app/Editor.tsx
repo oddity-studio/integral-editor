@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useMemo } from "react";
 import { Player, type PlayerRef, Thumbnail } from "@remotion/player";
 import { HelloWorld, LAYOUT_OPTIONS, FONT_OPTIONS, getLayoutControls } from "@/src/HelloWorld";
+import { CUSTOM_TRANSITIONS } from "@/src/LottieTransition";
 import { defaultVideoProps, videoPropsSchema, FPS, DEFAULT_SCENE_DURATION, getSceneFrames, getTotalFrames } from "@/src/types";
 import type { VideoProps, Scene, ColorScheme } from "@/src/types";
 
@@ -411,16 +412,14 @@ export default function Editor() {
                   Transition
                   <select
                     style={styles.layoutSelect}
-                    value={props.transition || "flash.json"}
+                    value={props.transition || "custom:flash"}
                     onChange={(e) =>
                       setProps((prev) => ({ ...prev, transition: e.target.value }))
                     }
                   >
-                    <option value="none">None</option>
-                    <option value="flash.json">Flash</option>
-                    <option value="Arrow.webm">Arrow</option>
-                    <option value="Box1.webm">Box1</option>
-                    <option value="Box2.webm">Box2</option>
+                    {CUSTOM_TRANSITIONS.map((t) => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
                   </select>
                 </label>
                 <label style={styles.styleLabel}>

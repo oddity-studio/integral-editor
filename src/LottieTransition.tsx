@@ -1,4 +1,4 @@
-import { AbsoluteFill, Video, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Video, useCurrentFrame, interpolate } from "remotion";
 import { Lottie } from "@remotion/lottie";
 import type { LottieAnimationData } from "@remotion/lottie";
 import { useEffect, useState } from "react";
@@ -36,28 +36,147 @@ export function preloadAllTransitions() {
   });
 }
 
-// Animation is 1920x1080 (landscape), video is 1080x1920 (portrait)
+// Custom CSS-based transitions (faster than Lottie)
 
-const Transition: React.FC<{ src?: string }> = ({ src }) => {
+const FadeTransition: React.FC = () => {
   const frame = useCurrentFrame();
-  const filePath = src || `${BASE}/picker/transitions/flash.json`;
+  const opacity = interpolate(frame, [0, TRANSITION_DURATION], [0, 1]);
+  return <AbsoluteFill style={{ backgroundColor: "#000", opacity }} />;
+};
+
+const SlideTransition: React.FC<{ direction?: "left" | "right" }> = ({ direction = "right" }) => {
+  const frame = useCurrentFrame();
+  const x = interpolate(frame, [0, TRANSITION_DURATION], [direction === "right" ? -1080 : 1080, 0]);
+  return (
+    <AbsoluteFill style={{ overflow: "hidden" }}>
+      <div style={{ transform: `translateX(${x}px)`, width: "100%", height: "100%", backgroundColor: "#000" }} />
+    </AbsoluteFill>
+  );
+};
+
+const WipeTransition: React.FC<{ direction?: "left" | "right" }> = ({ direction = "right" }) => {
+  const frame = useCurrentFrame();
+  const progress = interpolate(frame, [0, TRANSITION_DURATION], [0, 1]);
+  return (
+    <AbsoluteFill style={{ overflow: "hidden" }}>
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          [direction]: 0,
+          width: `${progress * 100}%`,
+          height: "100%",
+          backgroundColor: "#000",
+        }}
+      />
+    </AbsoluteFill>
+  );
+};
+
+const FlashTransition: React.FC = () => {
+  const frame = useCurrentFrame();
+  const opacity = interpolate(frame, [0, TRANSITION_DURATION / 2, TRANSITION_DURATION], [0, 1, 0], { extrapolateRight: "clamp" });
+  return <AbsoluteFill style={{ backgroundColor: "#fff", opacity: opacity * 0.9 }} />;
+};
+
+const ZoomTransition: React.FC = () => {
+  const frame = useCurrentFrame();
+  const scale = interpolate(frame, [0, TRANSITION_DURATION], [2, 1]);
+  const opacity = interpolate(frame, [0, 10], [0, 1]);
+  return (
+    <AbsoluteFill style={{ overflow: "hidden", backgroundColor: "#000" }}>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          backgroundColor: "#fff",
+          transform: `scale(${scale})`,
+          opacity,
+        }}
+      />
+    </AbsoluteFill>
+  );
+};
+
+const PixelTransition: React.FC = () => {
+  const frame = useCurrentFrame();
+  const progress = interpolate(frame, [0, TRANSITION_DURATION], [0, 1]);
+  const blocks = 12;
+  const blockSize = 1080 / blocks;
+  return (
+    <AbsoluteFill style={{ backgroundColor: "#000" }}>
+      {Array.from({ length: blocks * blocks }).map((_, i) => {
+        const row = Math.floor(i / blocks);
+        const col = i % blocks;
+        const delay = (row + col) / (blocks * 2);
+        const show = progress > delay ? interpolate(progress, [delay, delay + 0.2], [0, 1]) : 0;
+        return (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: col * blockSize,
+              top: row * blockSize,
+              width: blockSize,
+              height: blockSize,
+              backgroundColor: "#fff",
+              opacity: show,
+            }}
+          />
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
+export type TransitionType = "fade" | "slide" | "wipe" | "flash" | "zoom" | "pixel" | "lottie";
+
+const TRANSITION_COMPONENTS: Record<TransitionType, React.FC<any>> = {
+  fade: FadeTransition,
+  slide: SlideTransition,
+  wipe: WipeTransition,
+  flash: FlashTransition,
+  zoom: ZoomTransition,
+  pixel: PixelTransition,
+  lottie: () => null,
+};
+
+export function Transition({ src }: { src?: string }) {
+  const frame = useCurrentFrame();
+  
+  // Handle custom transitions
+  if (src && src.startsWith("custom:")) {
+    const customType = src.replace("custom:", "") as TransitionType;
+    const CustomComp = TRANSITION_COMPONENTS[customType];
+    if (CustomComp) return <CustomComp />;
+  }
+
+  if (!src || src === "none") return null;
+
+  const filePath = src.endsWith(".json") || src.endsWith(".webm") || src.endsWith(".mp4")
+    ? `${BASE}/picker/transitions/${src}`
+    : src;
+    
   const isVideo = filePath.endsWith(".webm") || filePath.endsWith(".mp4");
+  const isLottie = filePath.endsWith(".json");
 
   const [animationData, setAnimationData] = useState<LottieAnimationData | null>(
-    !isVideo ? (cache.get(filePath) ?? null) : null
+    isLottie ? (cache.get(filePath) ?? null) : null
   );
 
   useEffect(() => {
-    if (isVideo) return;
-    const cached = cache.get(filePath);
-    if (cached) {
-      setAnimationData(cached);
-      return;
+    if (isLottie) {
+      const cached = cache.get(filePath);
+      if (cached) {
+        setAnimationData(cached);
+        return;
+      }
+      setAnimationData(null);
+      preloadTransition(filePath).then((data) => setAnimationData(data));
     }
-    setAnimationData(null);
-    preloadTransition(filePath).then((data) => setAnimationData(data));
-  }, [filePath, isVideo]);
+  }, [filePath, isLottie]);
 
+  // Video transitions
   if (isVideo) {
     return (
       <AbsoluteFill style={{ overflow: "hidden", mixBlendMode: "screen" }}>
@@ -66,6 +185,7 @@ const Transition: React.FC<{ src?: string }> = ({ src }) => {
     );
   }
 
+  // Lottie transitions
   if (!animationData) {
     const opacity = frame < TRANSITION_DURATION / 2
       ? frame / (TRANSITION_DURATION / 2)
@@ -80,6 +200,18 @@ const Transition: React.FC<{ src?: string }> = ({ src }) => {
       <Lottie animationData={animationData} playbackRate={1} style={{ width: "100%", height: "100%", objectFit: "cover", transform: "rotate(90deg) scale(2.2)" }} />
     </AbsoluteFill>
   );
-};
+}
 
-export { Transition as LottieTransition, TRANSITION_DURATION };
+export const CUSTOM_TRANSITIONS: { value: string; label: string }[] = [
+  { value: "custom:fade", label: "Fade" },
+  { value: "custom:slide", label: "Slide" },
+  { value: "custom:wipe", label: "Wipe" },
+  { value: "custom:flash", label: "Flash" },
+  { value: "custom:zoom", label: "Zoom" },
+  { value: "custom:pixel", label: "Pixel" },
+  { value: "none", label: "None" },
+  { value: "flash.json", label: "Flash (Lottie)" },
+  { value: "Arrow.json", label: "Arrow (Lottie)" },
+  { value: "Box1.json", label: "Box1 (Lottie)" },
+  { value: "Box2.json", label: "Box2 (Lottie)" },
+];
