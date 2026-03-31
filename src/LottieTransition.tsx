@@ -16,7 +16,7 @@ const cache = new Map<string, LottieAnimationData>();
 const FadeTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
   const frame = propFrame ?? useCurrentFrame();
   const opacity = interpolate(frame, [0, halfDuration], [0, 1]);
-  return <AbsoluteFill style={{ backgroundColor: colorScheme?.light || "#fff", opacity }} />;
+  return <AbsoluteFill style={{ backgroundColor: colorScheme?.dark || "#000", opacity }} />;
 };
 
 const SlideTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
@@ -54,65 +54,13 @@ const FlashTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> =
   return <AbsoluteFill style={{ backgroundColor: colorScheme?.light || "#fff", opacity: opacity * 0.9 }} />;
 };
 
-const ZoomTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
-  const frame = propFrame ?? useCurrentFrame();
-  const scale = interpolate(frame, [0, halfDuration], [2, 1]);
-  const opacity = interpolate(frame, [0, 10], [0, 1]);
-  return (
-    <AbsoluteFill style={{ overflow: "hidden", backgroundColor: colorScheme?.dark || "#000" }}>
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          backgroundColor: colorScheme?.light || "#fff",
-          transform: `scale(${scale})`,
-          opacity,
-        }}
-      />
-    </AbsoluteFill>
-  );
-};
-
-const PixelTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
-  const frame = propFrame ?? useCurrentFrame();
-  const progress = interpolate(frame, [0, halfDuration], [0, 1]);
-  const blocks = 12;
-  const blockSize = 1080 / blocks;
-  return (
-    <AbsoluteFill style={{ backgroundColor: colorScheme?.dark || "#000" }}>
-      {Array.from({ length: blocks * blocks }).map((_, i) => {
-        const row = Math.floor(i / blocks);
-        const col = i % blocks;
-        const delay = (row + col) / (blocks * 2);
-        const show = progress > delay ? interpolate(progress, [delay, delay + 0.2], [0, 1]) : 0;
-        return (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              left: col * blockSize,
-              top: row * blockSize,
-              width: blockSize,
-              height: blockSize,
-              backgroundColor: colorScheme?.light || "#fff",
-              opacity: show,
-            }}
-          />
-        );
-      })}
-    </AbsoluteFill>
-  );
-};
-
-export type TransitionType = "fade" | "slide" | "wipe" | "flash" | "zoom" | "pixel" | "lottie";
+export type TransitionType = "fade" | "slide" | "wipe" | "flash" | "lottie";
 
 const TRANSITION_COMPONENTS: Record<TransitionType, React.FC<{ colorScheme?: ColorScheme; frame?: number }>> = {
   fade: FadeTransition,
   slide: SlideTransition,
   wipe: WipeTransition,
   flash: FlashTransition,
-  zoom: ZoomTransition,
-  pixel: PixelTransition,
   lottie: () => null,
 };
 
@@ -195,11 +143,8 @@ export const CUSTOM_TRANSITIONS: { value: string; label: string }[] = [
   { value: "custom:fade", label: "Fade" },
   { value: "custom:slide", label: "Slide" },
   { value: "custom:wipe", label: "Wipe" },
-  { value: "custom:flash", label: "Flash" },
-  { value: "custom:zoom", label: "Zoom" },
-  { value: "custom:pixel", label: "Pixel" },
   { value: "none", label: "None" },
-  { value: "flash.json", label: "Flash (Lottie)" },
+  { value: "flash.webm", label: "Flash (Video)" },
   { value: "Arrow.json", label: "Arrow (Lottie)" },
   { value: "Box1.json", label: "Box1 (Lottie)" },
   { value: "Box2.json", label: "Box2 (Lottie)" },
