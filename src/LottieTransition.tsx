@@ -195,4 +195,4 @@ export const CUSTOM_TRANSITIONS: { value: string; label: string }[] = [
   { value: "Box2.json", label: "Box2 (Lottie)" },
 ];
 
-export { LottieTransition, TRANSITION_DURATION };
+export { TRANSITION_DURATION };
