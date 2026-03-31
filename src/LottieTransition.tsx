@@ -61,7 +61,7 @@ const Transition: React.FC<{ src?: string }> = ({ src }) => {
 
   if (isVideo) {
     return (
-      <AbsoluteFill style={{ overflow: "hidden", justifyContent: "center", alignItems: "center", mixBlendMode: "screen" }}>
+      <AbsoluteFill style={{ overflow: "hidden", justifyContent: "center", alignItems: "center", mixBlendMode: "screen", transform: "rotate(90deg)" }}>
         <Video src={filePath} muted style={{ width: `${scaleRatio * 100}%`, height: "100%" }} />
       </AbsoluteFill>
     );
@@ -72,12 +72,12 @@ const Transition: React.FC<{ src?: string }> = ({ src }) => {
       ? frame / (TRANSITION_DURATION / 2)
       : 1 - (frame - TRANSITION_DURATION / 2) / (TRANSITION_DURATION / 2);
     return (
-      <AbsoluteFill style={{ backgroundColor: "#000", opacity: Math.max(0, Math.min(1, opacity)), mixBlendMode: "screen" }} />
+      <AbsoluteFill style={{ backgroundColor: "#000", opacity: Math.max(0, Math.min(1, opacity)), mixBlendMode: "screen", transform: "rotate(90deg)" }} />
     );
   }
 
   return (
-    <AbsoluteFill style={{ overflow: "hidden", justifyContent: "center", alignItems: "center", mixBlendMode: "screen" }}>
+    <AbsoluteFill style={{ overflow: "hidden", justifyContent: "center", alignItems: "center", mixBlendMode: "screen", transform: "rotate(90deg)" }}>
       <Lottie animationData={animationData} playbackRate={1} style={{ width: `${scaleRatio * 100}%`, height: "100%" }} />
     </AbsoluteFill>
   );
