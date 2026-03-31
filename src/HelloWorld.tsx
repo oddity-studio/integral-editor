@@ -823,7 +823,7 @@ export const HelloWorld: React.FC<VideoProps> = ({ colorScheme, scenes, music = 
                 from={sceneStart - transitionOffset}
                 durationInFrames={TRANSITION_DURATION}
               >
-                <LottieTransition src={transition} />
+                <LottieTransition src={transition} colorScheme={colorScheme} />
               </Sequence>
             )}
           </React.Fragment>
