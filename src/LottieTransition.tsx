@@ -8,33 +8,6 @@ const TRANSITION_DURATION = 30; // frames (0.5s at 60fps)
 
 // Per-URL cache so each transition JSON is fetched once and reused
 const cache = new Map<string, LottieAnimationData>();
-const pending = new Map<string, Promise<LottieAnimationData>>();
-
-// Preload all available transitions
-const TRANSITIONS = ["flash.json", "Arrow.json", "Box1.json", "Box2.json"];
-
-function preloadTransition(url: string): Promise<LottieAnimationData> {
-  const cached = cache.get(url);
-  if (cached) return Promise.resolve(cached);
-  let p = pending.get(url);
-  if (!p) {
-    p = fetch(url)
-      .then((res) => res.json())
-      .then((data: LottieAnimationData) => {
-        cache.set(url, data);
-        pending.delete(url);
-        return data;
-      });
-    pending.set(url, p);
-  }
-  return p;
-}
-
-export function preloadAllTransitions() {
-  TRANSITIONS.forEach((t) => {
-    preloadTransition(`${BASE}/picker/transitions/${t}`);
-  });
-}
 
 // Custom CSS-based transitions (faster than Lottie)
 
@@ -172,7 +145,12 @@ export function Transition({ src }: { src?: string }) {
         return;
       }
       setAnimationData(null);
-      preloadTransition(filePath).then((data) => setAnimationData(data));
+      fetch(filePath)
+        .then((res) => res.json())
+        .then((data: LottieAnimationData) => {
+          cache.set(filePath, data);
+          setAnimationData(data);
+        });
     }
   }, [filePath, isLottie]);
 
