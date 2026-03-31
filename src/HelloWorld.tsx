@@ -335,6 +335,7 @@ const BeltStompLayer: React.FC<{ src: string; sceneDuration: number }> = ({ src,
   const zoomFrames = 20;
   const progress = Math.min(frame / zoomFrames, 1);
   const eased = progress * progress; // ease-in: accelerates into the stop
+  const beltScale = interpolate(eased, [0, 1], [0.1, 2]);
   const opacity = interpolate(progress, [0, 0.05], [0, 1], { extrapolateRight: "clamp" });
 
   // Shake after stomp lands
@@ -362,7 +363,7 @@ const BeltStompLayer: React.FC<{ src: string; sceneDuration: number }> = ({ src,
         style={{
           width: "80%",
           height: "auto",
-          transform: `scale(${scale}) translate(${shakeX}px, ${shakeY}px)`,
+          transform: `scale(${beltScale}) translate(${shakeX}px, ${shakeY}px)`,
           opacity,
           filter: `drop-shadow(0 0 30px rgba(0,0,0,0.5))`,
         }}
