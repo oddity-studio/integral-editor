@@ -12,7 +12,7 @@ import {
 } from "remotion";
 import type { VideoProps, ColorScheme, Scene } from "./types";
 import { FPS, DEFAULT_SCENE_DURATION, getSceneFrames } from "./types";
-import { LottieTransition, TRANSITION_DURATION, preloadAllTransitions, CUSTOM_TRANSITIONS } from "./LottieTransition";
+import { LottieTransition, TRANSITION_DURATION, preloadAllTransitions } from "./LottieTransition";
 import { loadFont as loadDelaGothicOne } from "@remotion/google-fonts/DelaGothicOne";
 import { loadFont as loadExo2 } from "@remotion/google-fonts/Exo2";
 import { loadFont as loadPermanentMarker } from "@remotion/google-fonts/PermanentMarker";
