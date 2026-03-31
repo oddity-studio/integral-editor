@@ -141,10 +141,7 @@ export default function Editor() {
       playerRef.current?.seekTo(0);
       playerRef.current?.play();
       const startTime = performance.now();
-
-      // Phase 1: Record all frames first (no encoding)
-      const recordedFrames: VideoFrame[] = [];
-      const frameTimestamps: number[] = [];
+      let frameCount = 0;
 
       // Read frames from the captured video track
       const videoTrack = displayStream.getVideoTracks()[0];
@@ -171,12 +168,15 @@ export default function Editor() {
         const outputFrame = new VideoFrame(offscreen, {
           timestamp: frame.timestamp,
         });
-        recordedFrames.push(outputFrame);
-        frameTimestamps.push(frame.timestamp);
+        videoEncoder.encode(outputFrame, {
+          keyFrame: frameCount % 120 === 0,
+        });
+        outputFrame.close();
         frame.close();
+        frameCount++;
 
         setRenderProgress(
-          Math.min(90, Math.round((elapsed / durationMs) * 100)),
+          Math.min(95, Math.round((elapsed / durationMs) * 100)),
         );
       }
 
@@ -185,17 +185,6 @@ export default function Editor() {
       videoTrack.stop();
       displayStream.getTracks().forEach((t) => t.stop());
       displayStream = null;
-
-      // Phase 2: Encode all recorded frames
-      for (let i = 0; i < recordedFrames.length; i++) {
-        videoEncoder.encode(recordedFrames[i], {
-          keyFrame: i % 120 === 0,
-        });
-        recordedFrames[i].close();
-        setRenderProgress(
-          Math.min(95, 90 + Math.round((i / recordedFrames.length) * 10)),
-        );
-      }
 
       // Encode audio from the decoded WAV buffer
       const CHUNK_SIZE = 1024;
@@ -225,16 +214,8 @@ export default function Editor() {
       }
 
       // Finalize MP4
-      try {
-        await videoEncoder.flush();
-      } catch (e) {
-        console.error("Video flush error:", e);
-      }
-      try {
-        await audioEncoder.flush();
-      } catch (e) {
-        console.error("Audio flush error:", e);
-      }
+      await videoEncoder.flush();
+      await audioEncoder.flush();
       videoEncoder.close();
       audioEncoder.close();
       muxer.finalize();
