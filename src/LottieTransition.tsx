@@ -12,11 +12,8 @@ const pending = new Map<string, Promise<LottieAnimationData>>();
 
 // Preload all available transitions
 const TRANSITIONS = ["flash.json", "Arrow.json", "Box1.json", "Box2.json"];
-export function preloadAllTransitions() {
-  TRANSITIONS.forEach((t) => {
-    preloadTransition(`${BASE}/picker/transitions/${t}`);
-  });
-}
+
+function preloadTransition(url: string): Promise<LottieAnimationData> {
   const cached = cache.get(url);
   if (cached) return Promise.resolve(cached);
   let p = pending.get(url);
@@ -31,6 +28,12 @@ export function preloadAllTransitions() {
     pending.set(url, p);
   }
   return p;
+}
+
+export function preloadAllTransitions() {
+  TRANSITIONS.forEach((t) => {
+    preloadTransition(`${BASE}/picker/transitions/${t}`);
+  });
 }
 
 // Animation is 1920x1080 (landscape), video is 1080x1920 (portrait)
