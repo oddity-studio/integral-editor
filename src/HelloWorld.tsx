@@ -83,6 +83,8 @@ type SceneLayout = {
   titleCard?: boolean;
   beltStomp?: { src: string };
   customControls?: CustomControl[];
+  waveform?: boolean;
+  waveformColor?: string;
 };
 
 const SCENE_LAYOUTS: SceneLayout[] = [
@@ -104,6 +106,12 @@ const SCENE_LAYOUTS: SceneLayout[] = [
     textDefaults: { y: -60, fontSize: 200, mode: "flat" },
     customStyle: (c) => ({ background: `radial-gradient(ellipse at 50% 80%, ${c.highlight}, ${c.dark}, #000000)`, textColor: "#ffffff", textGlow: `0 0 20px ${c.highlight}80, 0 4px 30px rgba(0,0,0,0.7)` }),
     customControls: [{ type: "videoUpload", field: "backgroundVideo" }] },
+  { label: "Beat1", category: "General", characters: [],
+    backgroundVideo: { src: "", scale: 1, blendMode: "screen", startFrom: 0 },
+    textDefaults: { y: 280, fontSize: 140, mode: "flat" },
+    customStyle: (c) => ({ background: `linear-gradient(180deg, ${c.dark} 0%, #000000 50%, ${c.dark} 100%)`, textColor: "#38fff8", textGlow: `0 0 30px rgba(56, 255, 248, 0.85), 0 0 60px rgba(56, 255, 248, 0.5)` }),
+    customControls: [{ type: "videoUpload", field: "backgroundVideo" }],
+    waveform: true, waveformColor: "#24bdff" },
   { label: "Brackets", category: "General", characters: [],
     backgroundImageSrc: BRACKETS, textDefaults: { y: -60, fontSize: 200, mode: "flat" } },
   { label: "Grunge", category: "General", characters: [],
@@ -559,6 +567,9 @@ const SceneCard: React.FC<{ text: string; index: number; layoutIndex: number; co
       {resolvedLayout.beltStomp && (
         <BeltStompLayer src={resolvedLayout.beltStomp.src} sceneDuration={dur} />
       )}
+
+      {/* Beat1 waveform layer */}
+      {resolvedLayout.waveform && <SoundWaveform color={resolvedLayout.waveformColor || colors.light} />}
 
       {/* Character layer */}
       <CharacterLayer layoutIndex={layoutIndex} sceneDuration={dur} />
