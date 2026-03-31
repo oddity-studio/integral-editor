@@ -801,7 +801,7 @@ export const HelloWorld: React.FC<VideoProps> = ({ colorScheme, scenes, music = 
       {scenes.map((scene, i) => {
         const sceneStart = sceneStarts[i];
         const sceneFrames = getSceneFrames(scene);
-        const transitionOffset = transition === "custom:flash" ? 8 : 23;
+        const transitionOffset = 8; // half of TRANSITION_DURATION
         const sceneLayoutIndex = scene.layout ?? i;
         const sceneLayout = SCENE_LAYOUTS[sceneLayoutIndex % SCENE_LAYOUTS.length];
         return (
