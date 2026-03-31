@@ -85,6 +85,8 @@ type SceneLayout = {
   customControls?: CustomControl[];
   waveform?: boolean;
   waveformColor?: string;
+  waveformCenter?: number;
+  showVS?: boolean;
 };
 
 const SCENE_LAYOUTS: SceneLayout[] = [
@@ -111,7 +113,7 @@ const SCENE_LAYOUTS: SceneLayout[] = [
     textDefaults: { y: 280, fontSize: 140, mode: "flat" },
     customStyle: (c) => ({ background: `linear-gradient(180deg, ${c.dark} 0%, #000000 50%, ${c.dark} 100%)`, textColor: "#38fff8", textGlow: `0 0 30px rgba(56, 255, 248, 0.85), 0 0 60px rgba(56, 255, 248, 0.5)` }),
     customControls: [{ type: "videoUpload", field: "backgroundVideo" }],
-    waveform: true, waveformColor: "#24bdff" },
+    waveform: true, waveformColor: "#24bdff", showVS: true, waveformCenter: 365 },
   { label: "Brackets", category: "General", characters: [],
     backgroundImageSrc: BRACKETS, textDefaults: { y: -60, fontSize: 200, mode: "flat" } },
   { label: "Grunge", category: "General", characters: [],
@@ -275,12 +277,13 @@ const CharacterLayer: React.FC<{ layoutIndex: number; sceneDuration?: number }> 
   );
 };
 
-const SoundWaveform: React.FC<{ color: string }> = ({ color }) => {
+const SoundWaveform: React.FC<{ color: string; centerY?: number }> = ({ color, centerY = 300 }) => {
   const frame = useCurrentFrame();
-  const { fps } = useVideoConfig();
-  const enter = spring({ frame, fps, config: { damping: 14, mass: 0.5 } });
+  const enter = 1;
   const BAR_COUNT = 48;
   const BAR_WIDTH = 1080 / BAR_COUNT;
+  const MAX_H = 200;
+  const MIN_H = 10;
 
   return (
     <div
@@ -291,33 +294,31 @@ const SoundWaveform: React.FC<{ color: string }> = ({ color }) => {
         width: "100%",
         height: 600,
         display: "flex",
-        alignItems: "flex-end",
-        gap: 0,
-        opacity: enter * 0.7,
-        mixBlendMode: "screen" as const,
+        alignItems: "center",
         pointerEvents: "none" as const,
       }}
     >
       {Array.from({ length: BAR_COUNT }, (_, i) => {
-        // Slower waves with strong per-bar variation via large phase offsets
-        const seed = ((i * 137.5) % 17) + i * 0.3;
-        const h1 = Math.sin(frame * 0.12 + seed * 2.5) * 0.5 + 0.5;
-        const h2 = Math.sin(frame * 0.18 + seed * 4.1 + 3) * 0.5 + 0.5;
-        const h3 = Math.cos(frame * 0.09 + seed * 1.7 + 7) * 0.5 + 0.5;
-        // Mix so bars peak at very different times
-        const raw = h1 * 0.4 + h2 * 0.35 + h3 * 0.25;
-        const height = raw * raw * 500 * enter + 6;
+        const phase = (i / BAR_COUNT) * Math.PI * 6;
+        const norm = 0.5
+          + 0.40 * Math.sin(phase + frame * 2.3)
+          + 0.18 * Math.sin(phase * 1.9 + frame * 3.7)
+          + 0.09 * Math.sin(phase * 4.1 + frame * 1.5)
+          + 0.05 * Math.sin(phase * 2.7 + frame * 5.1);
+        const h = MIN_H + (MAX_H - MIN_H) * Math.max(0, Math.min(1, norm));
         return (
           <div
             key={i}
             style={{
-              width: BAR_WIDTH - 2,
-              height,
+              width: 7,
+              height: h,
               marginLeft: 1,
-              marginRight: 1,
+              marginRight: 7,
               backgroundColor: color,
               borderRadius: 3,
-              opacity: 0.6 + h1 * 0.4,
+              opacity: 0.55,
+              boxShadow: `0 0 18px ${color}99`,
+              transform: `translateY(${centerY - h / 2}px)`,
             }}
           />
         );
@@ -325,8 +326,7 @@ const SoundWaveform: React.FC<{ color: string }> = ({ color }) => {
     </div>
   );
 };
-
-const BeltStompLayer: React.FC<{ src: string; sceneDuration: number }> = ({ src, sceneDuration }) => {
+}; React.FC<{ src: string; sceneDuration: number }> = ({ src, sceneDuration }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -569,7 +569,16 @@ const SceneCard: React.FC<{ text: string; index: number; layoutIndex: number; co
       )}
 
       {/* Beat1 waveform layer */}
-      {resolvedLayout.waveform && <SoundWaveform color={resolvedLayout.waveformColor || colors.light} />}
+      {resolvedLayout.waveform && (
+        <SoundWaveform color={resolvedLayout.waveformColor || colors.light} centerY={resolvedLayout.waveformCenter} />
+      )}
+
+      {/* VS element for Beat1 */}
+      {resolvedLayout.showVS && (
+        <div style={{ position: "absolute", top: "65%", left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 50 }}>
+          <span style={{ fontFamily: "Anton", fontSize: 320, color: "#ffffff", textShadow: "0 0 40px rgba(255, 240, 160, 0.9), 0 0 20px rgba(255, 240, 160, 0.9)", letterSpacing: "-12px" }}>VS</span>
+        </div>
+      )}
 
       {/* Character layer */}
       <CharacterLayer layoutIndex={layoutIndex} sceneDuration={dur} />
