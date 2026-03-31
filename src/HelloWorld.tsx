@@ -326,7 +326,8 @@ const SoundWaveform: React.FC<{ color: string; centerY?: number }> = ({ color, c
     </div>
   );
 };
-}; React.FC<{ src: string; sceneDuration: number }> = ({ src, sceneDuration }) => {
+
+const BeltStompLayer: React.FC<{ src: string; sceneDuration: number }> = ({ src, sceneDuration }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
 
@@ -334,7 +335,6 @@ const SoundWaveform: React.FC<{ color: string; centerY?: number }> = ({ color, c
   const zoomFrames = 20;
   const progress = Math.min(frame / zoomFrames, 1);
   const eased = progress * progress; // ease-in: accelerates into the stop
-  const scale = interpolate(eased, [0, 1], [0.1, 2]);
   const opacity = interpolate(progress, [0, 0.05], [0, 1], { extrapolateRight: "clamp" });
 
   // Shake after stomp lands
