@@ -1,4 +1,4 @@
-const basePath = process.env.PAGES_BASE_PATH === "true" ? "/seasonal" : "";
+const basePath = process.env.PAGES_BASE_PATH === "true" ? "/integral-editor" : "";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

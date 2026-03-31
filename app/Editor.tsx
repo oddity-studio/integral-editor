@@ -227,7 +227,7 @@ export default function Editor() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "seasonal.mp4";
+      a.download = "video.mp4";
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: unknown) {
