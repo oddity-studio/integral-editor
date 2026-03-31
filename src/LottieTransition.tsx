@@ -37,7 +37,7 @@ export function preloadAllTransitions() {
 }
 
 // Animation is 1920x1080 (landscape), video is 1080x1920 (portrait)
-const scaleRatio = 2;
+const scaleRatio = 1;
 
 const Transition: React.FC<{ src?: string }> = ({ src }) => {
   const frame = useCurrentFrame();
