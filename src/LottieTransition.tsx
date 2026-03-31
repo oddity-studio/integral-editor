@@ -114,7 +114,7 @@ const TRANSITION_COMPONENTS: Record<TransitionType, React.FC<any>> = {
   lottie: () => null,
 };
 
-export { Transition as LottieTransition, TRANSITION_DURATION, CUSTOM_TRANSITIONS };
+export { Transition as LottieTransition, TRANSITION_DURATION };
 
 export function Transition({ src }: { src?: string }) {
   const frame = useCurrentFrame();
