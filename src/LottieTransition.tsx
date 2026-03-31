@@ -10,7 +10,13 @@ const TRANSITION_DURATION = 30; // frames (0.5s at 60fps)
 const cache = new Map<string, LottieAnimationData>();
 const pending = new Map<string, Promise<LottieAnimationData>>();
 
-function preloadTransition(url: string): Promise<LottieAnimationData> {
+// Preload all available transitions
+const TRANSITIONS = ["flash.json", "Arrow.json", "Box1.json", "Box2.json"];
+export function preloadAllTransitions() {
+  TRANSITIONS.forEach((t) => {
+    preloadTransition(`${BASE}/picker/transitions/${t}`);
+  });
+}
   const cached = cache.get(url);
   if (cached) return Promise.resolve(cached);
   let p = pending.get(url);
@@ -28,8 +34,8 @@ function preloadTransition(url: string): Promise<LottieAnimationData> {
 }
 
 // Animation is 1920x1080 (landscape), video is 1080x1920 (portrait)
-// Rotate 90deg to make it vertical, then scale to fill
-const scaleRatio = 1.1;
+// Rotate 90deg to make landscape animation vertical for 1080x1920 video
+const scaleRatio = 1;
 
 const Transition: React.FC<{ src?: string }> = ({ src }) => {
   const frame = useCurrentFrame();

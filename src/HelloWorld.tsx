@@ -12,7 +12,7 @@ import {
 } from "remotion";
 import type { VideoProps, ColorScheme, Scene } from "./types";
 import { FPS, DEFAULT_SCENE_DURATION, getSceneFrames } from "./types";
-import { LottieTransition, TRANSITION_DURATION } from "./LottieTransition";
+import { LottieTransition, TRANSITION_DURATION, preloadAllTransitions } from "./LottieTransition";
 import { loadFont as loadDelaGothicOne } from "@remotion/google-fonts/DelaGothicOne";
 import { loadFont as loadExo2 } from "@remotion/google-fonts/Exo2";
 import { loadFont as loadPermanentMarker } from "@remotion/google-fonts/PermanentMarker";
@@ -783,6 +783,9 @@ const TitleCard: React.FC<{ colorScheme: VideoProps["colorScheme"]; layoutIndex:
 
 export const HelloWorld: React.FC<VideoProps> = ({ colorScheme, scenes, music = "Tournament.mp3", transition = "flash.json", font = "Dela Gothic One" }) => {
   const fontConfig = FONT_MAP[font] || FONT_MAP["Dela Gothic One"];
+
+  // Preload all Lottie transitions on first render
+  preloadAllTransitions();
 
   // Compute cumulative start positions for variable-duration scenes
   const sceneStarts: number[] = [];
