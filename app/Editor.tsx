@@ -355,34 +355,6 @@ export default function Editor() {
                 : "Download MP4"}
             </button>
           )}
-          {!recordingMode && (
-            <button
-              style={{
-                ...styles.downloadButton,
-                backgroundColor: "#5865F2",
-                marginTop: 8,
-              }}
-              onClick={async () => {
-                const webhookUrl = localStorage.getItem("discordWebhook");
-                if (!webhookUrl) {
-                  const url = prompt("Enter Discord webhook URL (saved for next time):");
-                  if (!url) return;
-                  localStorage.setItem("discordWebhook", url);
-                }
-                const webhook = localStorage.getItem("discordWebhook");
-                await fetch(webhook!, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    content: "🎬 Render requested! Go to Actions > Render Video > Run workflow",
-                  }),
-                });
-                alert("Render request sent to Discord!");
-              }}
-            >
-              Request Render
-            </button>
-          )}
         </div>
 
         {!recordingMode && (
