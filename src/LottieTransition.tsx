@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import type { ColorScheme } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
-const TRANSITION_DURATION = 30; // frames (0.5s at 60fps)
+const TRANSITION_DURATION = 15; // frames (0.25s at 60fps)
 
 // Per-URL cache so each transition JSON is fetched once and reused
 const cache = new Map<string, LottieAnimationData>();
@@ -115,7 +115,7 @@ const TRANSITION_COMPONENTS: Record<TransitionType, React.FC<{ colorScheme?: Col
   lottie: () => null,
 };
 
-export function Transition({ src, colorScheme }: { src?: string; colorScheme?: ColorScheme }) {
+export const LottieTransition = ({ src, colorScheme }: { src?: string; colorScheme?: ColorScheme }) => {
   const frame = useCurrentFrame();
   
   // Handle custom transitions
@@ -194,3 +194,5 @@ export const CUSTOM_TRANSITIONS: { value: string; label: string }[] = [
   { value: "Box1.json", label: "Box1 (Lottie)" },
   { value: "Box2.json", label: "Box2 (Lottie)" },
 ];
+
+export { LottieTransition, TRANSITION_DURATION };
