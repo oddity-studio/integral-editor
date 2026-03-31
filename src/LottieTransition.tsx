@@ -37,7 +37,7 @@ export function preloadAllTransitions() {
 }
 
 // Animation is 1920x1080 (landscape), video is 1080x1920 (portrait)
-const scaleRatio = 1;
+const scaleRatio = 2;
 
 const Transition: React.FC<{ src?: string }> = ({ src }) => {
   const frame = useCurrentFrame();
@@ -62,7 +62,7 @@ const Transition: React.FC<{ src?: string }> = ({ src }) => {
   if (isVideo) {
     return (
       <AbsoluteFill style={{ overflow: "hidden", justifyContent: "center", alignItems: "center", mixBlendMode: "screen", transform: "rotate(90deg)" }}>
-        <Video src={filePath} muted style={{ width: `${scaleRatio * 100}%`, height: "100%" }} />
+        <Video src={filePath} muted style={{ width: `${scaleRatio * 100}%`, height: `${scaleRatio * 100}%`, objectFit: "cover" }} />
       </AbsoluteFill>
     );
   }
@@ -78,7 +78,7 @@ const Transition: React.FC<{ src?: string }> = ({ src }) => {
 
   return (
     <AbsoluteFill style={{ overflow: "hidden", justifyContent: "center", alignItems: "center", mixBlendMode: "screen", transform: "rotate(90deg)" }}>
-      <Lottie animationData={animationData} playbackRate={1} style={{ width: `${scaleRatio * 100}%`, height: "100%" }} />
+      <Lottie animationData={animationData} playbackRate={1} style={{ width: `${scaleRatio * 100}%`, height: `${scaleRatio * 100}%`, objectFit: "cover" }} />
     </AbsoluteFill>
   );
 };
