@@ -141,7 +141,10 @@ export default function Editor() {
       playerRef.current?.seekTo(0);
       playerRef.current?.play();
       const startTime = performance.now();
-      let frameCount = 0;
+
+      // Phase 1: Record all frames first (no encoding)
+      const recordedFrames: VideoFrame[] = [];
+      const frameTimestamps: number[] = [];
 
       // Read frames from the captured video track
       const videoTrack = displayStream.getVideoTracks()[0];
@@ -168,15 +171,12 @@ export default function Editor() {
         const outputFrame = new VideoFrame(offscreen, {
           timestamp: frame.timestamp,
         });
-        videoEncoder.encode(outputFrame, {
-          keyFrame: frameCount % 120 === 0,
-        });
-        outputFrame.close();
+        recordedFrames.push(outputFrame);
+        frameTimestamps.push(frame.timestamp);
         frame.close();
-        frameCount++;
 
         setRenderProgress(
-          Math.min(95, Math.round((elapsed / durationMs) * 100)),
+          Math.min(90, Math.round((elapsed / durationMs) * 100)),
         );
       }
 
@@ -185,6 +185,17 @@ export default function Editor() {
       videoTrack.stop();
       displayStream.getTracks().forEach((t) => t.stop());
       displayStream = null;
+
+      // Phase 2: Encode all recorded frames
+      for (let i = 0; i < recordedFrames.length; i++) {
+        videoEncoder.encode(recordedFrames[i], {
+          keyFrame: i % 120 === 0,
+        });
+        recordedFrames[i].close();
+        setRenderProgress(
+          Math.min(95, 90 + Math.round((i / recordedFrames.length) * 10)),
+        );
+      }
 
       // Encode audio from the decoded WAV buffer
       const CHUNK_SIZE = 1024;
