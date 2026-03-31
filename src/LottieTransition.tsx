@@ -6,21 +6,22 @@ import type { ColorScheme } from "./types";
 
 const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
 const TRANSITION_DURATION = 15; // frames (0.25s at 60fps)
+const halfDuration = Math.floor(TRANSITION_DURATION / 2);
 
 // Per-URL cache so each transition JSON is fetched once and reused
 const cache = new Map<string, LottieAnimationData>();
 
 // Custom CSS-based transitions (faster than Lottie)
 
-const FadeTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme }) => {
-  const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, TRANSITION_DURATION / 2], [0, 1]);
+const FadeTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
+  const frame = propFrame ?? useCurrentFrame();
+  const opacity = interpolate(frame, [0, halfDuration], [0, 1]);
   return <AbsoluteFill style={{ backgroundColor: colorScheme?.light || "#fff", opacity }} />;
 };
 
-const SlideTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme }) => {
-  const frame = useCurrentFrame();
-  const x = interpolate(frame, [0, TRANSITION_DURATION / 2], [-1080, 0]);
+const SlideTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
+  const frame = propFrame ?? useCurrentFrame();
+  const x = interpolate(frame, [0, halfDuration], [-1080, 0]);
   return (
     <AbsoluteFill style={{ overflow: "hidden" }}>
       <div style={{ transform: `translateX(${x}px)`, width: "100%", height: "100%", backgroundColor: colorScheme?.highlight || "#fff" }} />
@@ -28,9 +29,9 @@ const SlideTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme 
   );
 };
 
-const WipeTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme }) => {
-  const frame = useCurrentFrame();
-  const progress = interpolate(frame, [0, TRANSITION_DURATION / 2], [0, 1]);
+const WipeTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
+  const frame = propFrame ?? useCurrentFrame();
+  const progress = interpolate(frame, [0, halfDuration], [0, 1]);
   return (
     <AbsoluteFill style={{ overflow: "hidden" }}>
       <div
@@ -47,15 +48,15 @@ const WipeTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme }
   );
 };
 
-const FlashTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme }) => {
-  const frame = useCurrentFrame();
-  const opacity = interpolate(frame, [0, TRANSITION_DURATION / 2, TRANSITION_DURATION], [0, 1, 0], { extrapolateRight: "clamp" });
+const FlashTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
+  const frame = propFrame ?? useCurrentFrame();
+  const opacity = interpolate(frame, [0, halfDuration / 2, halfDuration], [0, 1, 0], { extrapolateRight: "clamp" });
   return <AbsoluteFill style={{ backgroundColor: colorScheme?.light || "#fff", opacity: opacity * 0.9 }} />;
 };
 
-const ZoomTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme }) => {
-  const frame = useCurrentFrame();
-  const scale = interpolate(frame, [0, TRANSITION_DURATION / 2], [2, 1]);
+const ZoomTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
+  const frame = propFrame ?? useCurrentFrame();
+  const scale = interpolate(frame, [0, halfDuration], [2, 1]);
   const opacity = interpolate(frame, [0, 10], [0, 1]);
   return (
     <AbsoluteFill style={{ overflow: "hidden", backgroundColor: colorScheme?.dark || "#000" }}>
@@ -72,9 +73,9 @@ const ZoomTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme }
   );
 };
 
-const PixelTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme }) => {
-  const frame = useCurrentFrame();
-  const progress = interpolate(frame, [0, TRANSITION_DURATION / 2], [0, 1]);
+const PixelTransition: React.FC<{ colorScheme?: ColorScheme; frame?: number }> = ({ colorScheme, frame: propFrame }) => {
+  const frame = propFrame ?? useCurrentFrame();
+  const progress = interpolate(frame, [0, halfDuration], [0, 1]);
   const blocks = 12;
   const blockSize = 1080 / blocks;
   return (
@@ -105,7 +106,7 @@ const PixelTransition: React.FC<{ colorScheme?: ColorScheme }> = ({ colorScheme 
 
 export type TransitionType = "fade" | "slide" | "wipe" | "flash" | "zoom" | "pixel" | "lottie";
 
-const TRANSITION_COMPONENTS: Record<TransitionType, React.FC<{ colorScheme?: ColorScheme }>> = {
+const TRANSITION_COMPONENTS: Record<TransitionType, React.FC<{ colorScheme?: ColorScheme; frame?: number }>> = {
   fade: FadeTransition,
   slide: SlideTransition,
   wipe: WipeTransition,
@@ -115,14 +116,16 @@ const TRANSITION_COMPONENTS: Record<TransitionType, React.FC<{ colorScheme?: Col
   lottie: () => null,
 };
 
-export const LottieTransition = ({ src, colorScheme }: { src?: string; colorScheme?: ColorScheme }) => {
+export const LottieTransition = ({ src, colorScheme, phase }: { src?: string; colorScheme?: ColorScheme; phase?: "first" | "second" }) => {
   const frame = useCurrentFrame();
+  const halfDuration = Math.floor(TRANSITION_DURATION / 2);
+  const effectiveFrame = phase === "second" ? frame + halfDuration : frame;
   
   // Handle custom transitions
   if (src && src.startsWith("custom:")) {
     const customType = src.replace("custom:", "") as TransitionType;
     const CustomComp = TRANSITION_COMPONENTS[customType];
-    if (CustomComp) return <CustomComp colorScheme={colorScheme} />;
+    if (CustomComp) return <CustomComp colorScheme={colorScheme} frame={effectiveFrame} />;
   }
 
   if (!src || src === "none") return null;

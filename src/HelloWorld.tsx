@@ -817,14 +817,25 @@ export const HelloWorld: React.FC<VideoProps> = ({ colorScheme, scenes, music = 
                 <SceneCard text={scene.text} index={i} layoutIndex={sceneLayoutIndex} colors={colorScheme} fontConfig={fontConfig} fontSize={scene.fontSize} y={scene.y} x={scene.x} rotateZ={scene.rotateZ} rotateX={scene.rotateX} perspective={scene.perspective} backgroundVideo={scene.backgroundVideo} sceneDuration={sceneFrames} />
               )}
             </Sequence>
-            {/* Transition overlay */}
+            {/* Transition overlay - first half at end of previous scene */}
             {transition !== "none" && (
               <Sequence
                 from={sceneStart - transitionOffset}
-                durationInFrames={TRANSITION_DURATION}
+                durationInFrames={Math.floor(TRANSITION_DURATION / 2)}
               >
                 <div style={{ zIndex: 100 }}>
-                  <LottieTransition src={transition} colorScheme={colorScheme} />
+                  <LottieTransition src={transition} colorScheme={colorScheme} phase="first" />
+                </div>
+              </Sequence>
+            )}
+            {/* Transition overlay - second half at start of next scene */}
+            {transition !== "none" && (
+              <Sequence
+                from={sceneStart}
+                durationInFrames={Math.floor(TRANSITION_DURATION / 2)}
+              >
+                <div style={{ zIndex: 100 }}>
+                  <LottieTransition src={transition} colorScheme={colorScheme} phase="second" />
                 </div>
               </Sequence>
             )}
