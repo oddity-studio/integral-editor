@@ -76,7 +76,7 @@ type SceneLayout = {
   label: string;
   category: string;
   characters: CharPlacement[];
-  backgroundVideo?: { src: string; scale?: number; blendMode?: string; startFrom?: number; muted?: boolean };
+  backgroundVideo?: { src: string; scale?: number; blendMode?: string; startFrom?: number; muted?: boolean; objectFit?: string };
   backgroundImageSrc?: string;
   textDefaults?: { x?: number; y?: number; fontSize?: number; rotateZ?: number; rotateX?: number; perspective?: number; mode?: TextMode };
   customStyle?: (colors: ColorScheme) => { background: string; textColor: string; textGlow?: string };
@@ -109,11 +109,11 @@ const SCENE_LAYOUTS: SceneLayout[] = [
     customStyle: (c) => ({ background: `radial-gradient(ellipse at 50% 80%, ${c.highlight}, ${c.dark}, #000000)`, textColor: "#ffffff", textGlow: `0 0 20px ${c.highlight}80, 0 4px 30px rgba(0,0,0,0.7)` }),
     customControls: [{ type: "videoUpload", field: "backgroundVideo" }] },
   { label: "Beat1", category: "General", characters: [],
-    backgroundVideo: { src: "", scale: 1, blendMode: "screen", startFrom: 0 },
-    textDefaults: { y: 280, fontSize: 140, mode: "flat" },
+    backgroundVideo: { src: "", scale: 1, blendMode: "screen", startFrom: 0, objectFit: "contain" },
+    textDefaults: { y: 900, fontSize: 140, mode: "flat" },
     customStyle: (c) => ({ background: `linear-gradient(180deg, ${c.dark} 0%, #000000 50%, ${c.dark} 100%)`, textColor: "#38fff8", textGlow: `0 0 30px rgba(56, 255, 248, 0.85), 0 0 60px rgba(56, 255, 248, 0.5)` }),
     customControls: [{ type: "videoUpload", field: "backgroundVideo" }],
-    waveform: true, waveformColor: "#24bdff", showVS: true, waveformCenter: 365 },
+    waveform: true, waveformColor: "#24bdff", waveformCenter: 960, showVS: true },
   { label: "Brackets", category: "General", characters: [],
     backgroundImageSrc: BRACKETS, textDefaults: { y: -60, fontSize: 200, mode: "flat" } },
   { label: "Grunge", category: "General", characters: [],
@@ -277,13 +277,13 @@ const CharacterLayer: React.FC<{ layoutIndex: number; sceneDuration?: number }> 
   );
 };
 
-const SoundWaveform: React.FC<{ color: string; centerY?: number }> = ({ color, centerY = 300 }) => {
+const SoundWaveform: React.FC<{ color: string; centerY?: number }> = ({ color, centerY = 960 }) => {
   const frame = useCurrentFrame();
   const enter = 1;
-  const BAR_COUNT = 48;
+  const BAR_COUNT = 80;
   const BAR_WIDTH = 1080 / BAR_COUNT;
-  const MAX_H = 200;
-  const MIN_H = 10;
+  const MAX_H = 640;
+  const MIN_H = 20;
 
   return (
     <div
@@ -292,7 +292,7 @@ const SoundWaveform: React.FC<{ color: string; centerY?: number }> = ({ color, c
         bottom: 0,
         left: 0,
         width: "100%",
-        height: 600,
+        height: "100%",
         display: "flex",
         alignItems: "center",
         pointerEvents: "none" as const,
@@ -301,21 +301,19 @@ const SoundWaveform: React.FC<{ color: string; centerY?: number }> = ({ color, c
       {Array.from({ length: BAR_COUNT }, (_, i) => {
         const phase = (i / BAR_COUNT) * Math.PI * 6;
         const norm = 0.5
-          + 0.40 * Math.sin(phase + frame * 2.3)
-          + 0.18 * Math.sin(phase * 1.9 + frame * 3.7)
-          + 0.09 * Math.sin(phase * 4.1 + frame * 1.5)
-          + 0.05 * Math.sin(phase * 2.7 + frame * 5.1);
+          + 0.40 * Math.sin(phase + frame * 0.3)
+          + 0.18 * Math.sin(phase * 1.9 + frame * 0.5)
+          + 0.09 * Math.sin(phase * 4.1 + frame * 0.2)
+          + 0.05 * Math.sin(phase * 2.7 + frame * 0.7);
         const h = MIN_H + (MAX_H - MIN_H) * Math.max(0, Math.min(1, norm));
         return (
           <div
             key={i}
             style={{
-              width: 7,
+              width: BAR_WIDTH - 1,
               height: h,
-              marginLeft: 1,
-              marginRight: 7,
               backgroundColor: color,
-              borderRadius: 3,
+              borderRadius: 2,
               opacity: 0.55,
               boxShadow: `0 0 18px ${color}99`,
               transform: `translateY(${centerY - h / 2}px)`,
@@ -538,7 +536,7 @@ const SceneCard: React.FC<{ text: string; index: number; layoutIndex: number; co
             style={{
               width: "100%",
               height: "100%",
-              objectFit: "cover",
+              objectFit: (backgroundVideo.objectFit as React.CSSProperties["objectFit"]) ?? "contain",
               transform: `scale(${backgroundVideo.scale ?? 1})`,
             }}
           />
@@ -576,7 +574,7 @@ const SceneCard: React.FC<{ text: string; index: number; layoutIndex: number; co
 
       {/* VS element for Beat1 */}
       {resolvedLayout.showVS && (
-        <div style={{ position: "absolute", top: "65%", left: 0, right: 0, display: "flex", justifyContent: "center", zIndex: 50 }}>
+        <div style={{ position: "absolute", top: "50%", left: 0, right: 0, display: "flex", justifyContent: "center", transform: "translateY(-50%)", zIndex: 50 }}>
           <span style={{ fontFamily: "Anton", fontSize: 320, color: "#ffffff", textShadow: "0 0 40px rgba(255, 240, 160, 0.9), 0 0 20px rgba(255, 240, 160, 0.9)", letterSpacing: "-12px" }}>VS</span>
         </div>
       )}
