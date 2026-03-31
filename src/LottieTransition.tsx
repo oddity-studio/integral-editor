@@ -38,7 +38,8 @@ export function preloadAllTransitions() {
 
 // Animation is 1920x1080 (landscape), video is 1080x1920 (portrait)
 // Rotate 90deg to make landscape animation vertical for 1080x1920 video
-const scaleRatio = 1;
+// Scale up to cover full screen after rotation
+const scaleRatio = 2;
 
 const Transition: React.FC<{ src?: string }> = ({ src }) => {
   const frame = useCurrentFrame();
