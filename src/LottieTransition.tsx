@@ -119,8 +119,8 @@ const TRANSITION_COMPONENTS: Record<TransitionType, React.FC<{ colorScheme?: Col
 export const LottieTransition = ({ src, colorScheme, phase }: { src?: string; colorScheme?: ColorScheme; phase?: "first" | "second" }) => {
   const frame = useCurrentFrame();
   const halfDuration = Math.floor(TRANSITION_DURATION / 2);
-  // For second phase, start animation from beginning (frame 0-6 maps to animation 0-1)
-  const effectiveFrame = phase === "second" ? frame : frame;
+  // First phase: frames 0-7 (fade in), Second phase: frames 7-14 (fade out)
+  const effectiveFrame = phase === "second" ? frame + halfDuration : frame;
   
   // Handle custom transitions
   if (src && src.startsWith("custom:")) {
@@ -138,17 +138,9 @@ export const LottieTransition = ({ src, colorScheme, phase }: { src?: string; co
   const isVideo = filePath.endsWith(".webm") || filePath.endsWith(".mp4");
   const isLottie = filePath.endsWith(".json");
 
-  // For phase second, render a simple fade as fallback since we can't easily shift the animation
-  if (phase === "second" && isVideo) {
-    return (
-      <AbsoluteFill style={{ overflow: "hidden", mixBlendMode: "screen", zIndex: 100 }}>
-        <Video src={filePath} muted style={{ width: "100%", height: "100%", objectFit: "cover", transform: "rotate(90deg) scale(2.2)" }} />
-      </AbsoluteFill>
-    );
-  }
-
-  if (phase === "second" && isLottie) {
-    const opacity = interpolate(frame, [0, halfDuration], [0, 1]);
+  // For video/lottie - first phase fades in, second phase fades out
+  if (phase === "second") {
+    const opacity = interpolate(frame, [0, halfDuration], [1, 0]);
     return <AbsoluteFill style={{ backgroundColor: "#000", opacity, zIndex: 100 }} />;
   }
 
