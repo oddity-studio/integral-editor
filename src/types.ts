@@ -52,7 +52,7 @@ export const getTotalFrames = (props: VideoProps): number =>
 export const defaultVideoProps: VideoProps = {
   seasonNumber: "01",
   music: "Tournament.mp3",
-  transition: "flash.json",
+  transition: "none",
   font: "Dela Gothic One",
   colorScheme: {
     dark: "#953f0c",
